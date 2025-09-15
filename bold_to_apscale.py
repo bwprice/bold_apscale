@@ -32,7 +32,7 @@ def setup_logging(verbose: bool = False) -> None:
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Convert BOLD FASTA to BLAST database with MIDORI-format taxonomy',
+        description='Convert BOLD FASTA to BLAST database with APSCALE-format taxonomy',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -181,11 +181,11 @@ def load_taxonomy_data(taxonomy_file: str) -> pd.DataFrame:
     logging.info(f"Loaded {len(taxonomy_df):,} taxonomy records")
     return taxonomy_df
 
-def create_midori_taxonomy(process_to_bin: Dict[str, str], 
+def create_apscale_taxonomy(process_to_bin: Dict[str, str], 
                           taxonomy_df: pd.DataFrame, 
                           output_file: str) -> int:
     """
-    Create MIDORI-format taxonomy parquet file.
+    Create APSCALE-format taxonomy parquet file.
     
     Args:
         process_to_bin: Mapping from ProcessID to BIN
@@ -195,7 +195,7 @@ def create_midori_taxonomy(process_to_bin: Dict[str, str],
     Returns:
         Number of taxonomy records created
     """
-    logging.info("Creating MIDORI-format taxonomy file...")
+    logging.info("Creating APSCALE-format taxonomy file...")
     
     # Create BIN to taxonomy lookup
     bin_to_taxonomy = {}
@@ -221,7 +221,7 @@ def create_midori_taxonomy(process_to_bin: Dict[str, str],
         if bin_id in bin_to_taxonomy:
             tax_data = bin_to_taxonomy[bin_id]
             record = {
-                'Accession': process_id,  # Process ID as accession (MIDORI style)
+                'Accession': process_id,  # Process ID as accession (APSCALE style)
                 'superkingdom': tax_data['superkingdom'],
                 'phylum': tax_data['phylum'],
                 'class': tax_data['class'],
@@ -346,7 +346,7 @@ def main():
         clean_fasta = temp_dir / f"{args.output}_clean.fasta"
         temp_files = [str(clean_fasta)]
         
-        logging.info("Starting BOLD to MIDORI conversion...")
+        logging.info("Starting BOLD to APSCALE conversion...")
         logging.info(f"Input FASTA: {args.input}")
         logging.info(f"Taxonomy file: {args.taxonomy}")
         logging.info(f"Output database: {db_name}")
@@ -358,8 +358,8 @@ def main():
         # Step 2: Load taxonomy data
         taxonomy_df = load_taxonomy_data(args.taxonomy)
         
-        # Step 3: Create MIDORI-format taxonomy file
-        taxonomy_count = create_midori_taxonomy(process_to_bin, taxonomy_df, str(taxonomy_file))
+        # Step 3: Create APSCALE-format taxonomy file
+        taxonomy_count = create_apscale_taxonomy(process_to_bin, taxonomy_df, str(taxonomy_file))
         
         # Step 4: Create BLAST database
         create_blast_database(str(clean_fasta), str(db_name), args.title)
