@@ -1,8 +1,8 @@
-# BOLD to MIDORI Converter
+# BOLDistilled to APSCALE Converter
 
-This script converts BOLD FASTA files with `ProcessID|BIN` headers to:
+This script converts [BOLDistilled](https://boldsystems.org/data/boldistilled/) FASTA files with `ProcessID|BIN` headers and the associated taxonomy TSV to [APSCALE](https://github.com/DominikBuchner/apscale) formatted blast+ database, specifically:
 1. Clean BLAST database (ProcessID only headers)  
-2. MIDORI-format taxonomy parquet file
+2. APSCALE-format taxonomy parquet file
 
 ## Requirements
 
@@ -20,27 +20,27 @@ pip install pandas pyarrow
 
 ### Basic Usage
 ```bash
-python bold_to_midori.py -i sequences.fasta -t taxonomy.tsv
+python bold_to_apscale.py -i sequences.fasta -t taxonomy.tsv
 ```
 
 ### Custom Database Name
 ```bash
-python bold_to_midori.py -i sequences.fasta -t taxonomy.tsv -o my_database
+python bold_to_apscale.py -i sequences.fasta -t taxonomy.tsv -o my_database
 ```
 
 ### Specify Output Directory
 ```bash
-python bold_to_midori.py -i sequences.fasta -t taxonomy.tsv -o db --output-dir /path/to/output
+python bold_to_apscale.py -i sequences.fasta -t taxonomy.tsv -o db --output-dir /path/to/output
 ```
 
 ### Verbose Mode
 ```bash
-python bold_to_midori.py -i sequences.fasta -t taxonomy.tsv -v
+python bold_to_apscale.py -i sequences.fasta -t taxonomy.tsv -v
 ```
 
 ### Dry Run (Show What Would Be Done)
 ```bash
-python bold_to_midori.py -i sequences.fasta -t taxonomy.tsv --dry-run
+python bold_to_apscale.py -i sequences.fasta -t taxonomy.tsv --dry-run
 ```
 
 ## Arguments
@@ -84,26 +84,21 @@ Multiple files with specified name:
 - `db.ndb`, `db.nhr`, `db.nin`, `db.nsq`, etc.
 
 ### Taxonomy File
-MIDORI-format parquet file:
+APSCALE-format parquet file:
 - `db_taxonomy.parquet.snappy`
 
 ## Example
 ```bash
 # Convert BOL data to BLAST database
-python bold_to_midori.py \
+python bold_to_apscale.py \
   -i BOLDistilled_COI_Jul2025_SEQUENCES.fasta \
   -t BOLDistilled_COI_Jul2025_TAXONOMY.tsv \
-  -o bol_database \
+  -o db \
   --output-dir ./databases \
   -v
 
 # Output:
-# ./databases/bol_database.* (BLAST database files)
-# ./databases/bol_database_taxonomy.parquet.snappy
+# ./databases/db.* (BLAST database files)
+# ./databases/db_taxonomy.parquet.snappy
 ```
 
-## Integration with apscale
-
-Use the generated files with apscale software:
-- Database path: `./databases/bol_database`
-- Taxonomy path: `./databases/bol_database_taxonomy.parquet.snappy`
