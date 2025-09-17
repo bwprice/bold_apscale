@@ -98,7 +98,7 @@ python bold_to_apscale.py \
   -v
 
 # Output:
-# ./databases/db.* (BLAST database files)
-# ./databases/db_taxonomy.parquet.snappy
+./databases/db.* (BLAST database files)
+./databases/db_taxonomy.parquet.snappy
 ```
 
