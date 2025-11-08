@@ -11,9 +11,69 @@ This script converts [BOLDistilled](https://boldsystems.org/data/boldistilled/) 
 - pyarrow (for parquet support)
 - BLAST+ tools (makeblastdb must be in PATH)
 
-Install dependencies:
+### Installing Python Dependencies
 ```bash
 pip install pandas pyarrow
+```
+
+### Installing BLAST+
+
+#### Windows
+1. Download the Windows installer from [NCBI BLAST+ releases](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+2. Run the installer (e.g., `ncbi-blast-X.X.X+-win64.exe`)
+3. During installation, check the option to add BLAST+ to your PATH
+4. Alternatively, download the ZIP archive and manually add the `bin` directory to your PATH
+
+To verify installation:
+```cmd
+makeblastdb -version
+```
+
+#### macOS
+Using Homebrew (recommended):
+```bash
+brew install blast
+```
+
+Using Conda:
+```bash
+conda install -c bioconda blast
+```
+
+Manual installation:
+1. Download the macOS archive from [NCBI BLAST+ releases](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+2. Extract and add to PATH in `~/.zshrc` or `~/.bash_profile`:
+```bash
+export PATH="/path/to/ncbi-blast-X.X.X+/bin:$PATH"
+```
+
+#### Linux
+Using apt (Debian/Ubuntu):
+```bash
+sudo apt update
+sudo apt install ncbi-blast+
+```
+
+Using yum (RedHat/CentOS/Fedora):
+```bash
+sudo yum install ncbi-blast+
+```
+
+Using Conda:
+```bash
+conda install -c bioconda blast
+```
+
+Manual installation:
+1. Download the Linux archive from [NCBI BLAST+ releases](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+2. Extract and add to PATH in `~/.bashrc`:
+```bash
+export PATH="/path/to/ncbi-blast-X.X.X+/bin:$PATH"
+```
+
+To verify installation on any platform:
+```bash
+makeblastdb -version
 ```
 
 ## Usage
