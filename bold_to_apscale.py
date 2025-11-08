@@ -126,6 +126,7 @@ def validate_inputs(args: argparse.Namespace) -> None:
 def clean_fasta_headers(input_fasta: str, output_fasta: str) -> Tuple[int, Dict[str, str]]:
     """
     Clean FASTA headers by removing BIN IDs and create mapping.
+    Handles duplicate ProcessIDs by adding unique suffixes (_1, _2, etc.).
     
     Args:
         input_fasta: Path to input FASTA with ProcessID|BIN headers
@@ -138,6 +139,8 @@ def clean_fasta_headers(input_fasta: str, output_fasta: str) -> Tuple[int, Dict[
     
     process_to_bin = {}
     sequence_count = 0
+    seen_process_ids = {}  # Track occurrences of each process ID
+    duplicate_count = 0
     
     with open(input_fasta, 'r') as infile, open(output_fasta, 'w') as outfile:
         for line in infile:
@@ -145,19 +148,52 @@ def clean_fasta_headers(input_fasta: str, output_fasta: str) -> Tuple[int, Dict[
                 header = line.strip()[1:]  # Remove '>'
                 if '|' in header:
                     process_id, bin_id = header.split('|', 1)
-                    process_to_bin[process_id] = bin_id
-                    outfile.write(f">{process_id}\n")
+                    
+                    # Handle duplicates by adding suffix
+                    if process_id in seen_process_ids:
+                        seen_process_ids[process_id] += 1
+                        unique_process_id = f"{process_id}_{seen_process_ids[process_id]}"
+                        duplicate_count += 1
+                        
+                        if duplicate_count <= 10:  # Log first few duplicates
+                            logging.warning(f"  Duplicate ProcessID '{process_id}' renamed to '{unique_process_id}'")
+                        elif duplicate_count == 11:
+                            logging.warning(f"  (Further duplicate warnings suppressed...)")
+                    else:
+                        seen_process_ids[process_id] = 0
+                        unique_process_id = process_id
+                    
+                    process_to_bin[unique_process_id] = bin_id
+                    outfile.write(f">{unique_process_id}\n")
                     sequence_count += 1
                     
                     if sequence_count % 100000 == 0:
                         logging.info(f"  Processed {sequence_count:,} sequences...")
                 else:
-                    # Header without '|' - use as-is
-                    process_to_bin[header] = header
-                    outfile.write(line)
+                    # Header without '|' - use as-is but still check for duplicates
+                    if header in seen_process_ids:
+                        seen_process_ids[header] += 1
+                        unique_header = f"{header}_{seen_process_ids[header]}"
+                        duplicate_count += 1
+                        
+                        if duplicate_count <= 10:
+                            logging.warning(f"  Duplicate ProcessID '{header}' renamed to '{unique_header}'")
+                        elif duplicate_count == 11:
+                            logging.warning(f"  (Further duplicate warnings suppressed...)")
+                        
+                        process_to_bin[unique_header] = header
+                        outfile.write(f">{unique_header}\n")
+                    else:
+                        seen_process_ids[header] = 0
+                        process_to_bin[header] = header
+                        outfile.write(line)
+                    
                     sequence_count += 1
             else:
                 outfile.write(line)
+    
+    if duplicate_count > 0:
+        logging.warning(f"Found and renamed {duplicate_count:,} duplicate ProcessIDs")
     
     logging.info(f"Cleaned {sequence_count:,} sequences")
     return sequence_count, process_to_bin
