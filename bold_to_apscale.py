@@ -203,7 +203,13 @@ def load_taxonomy_data(taxonomy_file: str) -> pd.DataFrame:
     logging.info("Loading taxonomy data...")
     
     try:
-        taxonomy_df = pd.read_csv(taxonomy_file, sep='\t')
+        # Read the file with na_values to handle empty strings and "None" strings
+        taxonomy_df = pd.read_csv(
+            taxonomy_file, 
+            sep='\t',
+            na_values=['', 'None', 'NA', 'N/A', 'null'],  # Treat these as NaN
+            keep_default_na=True  # Also keep default NaN values
+        )
     except Exception as e:
         raise RuntimeError(f"Failed to load taxonomy file: {e}")
     
@@ -237,14 +243,21 @@ def create_apscale_taxonomy(process_to_bin: Dict[str, str],
     bin_to_taxonomy = {}
     for _, row in taxonomy_df.iterrows():
         bin_id = row['bin']
+        # Helper function to clean taxonomy values
+        def clean_value(val):
+            """Convert NaN, None, or string 'None' to empty string."""
+            if pd.isna(val) or val is None or str(val).strip().lower() == 'none':
+                return ''
+            return str(val).strip()
+        
         bin_to_taxonomy[bin_id] = {
-            'superkingdom': row['kingdom'],
-            'phylum': row['phylum'],
-            'class': row['class'],
-            'order': row['order'],
-            'family': row['family'],
-            'genus': row['genus'],
-            'species': row['species']
+            'superkingdom': clean_value(row['kingdom']),
+            'phylum': clean_value(row['phylum']),
+            'class': clean_value(row['class']),
+            'order': clean_value(row['order']),
+            'family': clean_value(row['family']),
+            'genus': clean_value(row['genus']),
+            'species': clean_value(row['species'])
         }
     
     logging.info(f"Created taxonomy lookup for {len(bin_to_taxonomy):,} BIN IDs")
